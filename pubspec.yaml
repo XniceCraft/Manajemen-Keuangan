@@ -1,0 +1,34 @@
+name: finance_management
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  go_router: ^15.1.2
+  
+  sqflite: ^2.4.2
+  sqflite_common_ffi: ^2.3.5
+  sqflite_common_ffi_web: ^1.0.0
+  path: ^1.9.1
+  
+  flutter_riverpod: ^2.6.1
+  
+  cupertino_icons: ^1.0.8
+  flutter_animate: ^4.5.2
+  intl: ^0.20.2
+  lucide_icons: ^0.257.0
+  fl_chart: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
