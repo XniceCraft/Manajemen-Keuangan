@@ -1,12 +1,13 @@
+import 'package:finance_management/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../models/transaction.dart';
 import '../providers/providers.dart';
 import '../widgets/glassmorphic_card.dart';
 import '../widgets/glassmorphic_inkwell.dart';
 import '../theme/app_theme.dart';
+import '../database/database.dart' as db;
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
@@ -95,11 +96,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
               ),
             ),
             transactionsAsync.when(
-              data:
-                  (transactions) =>
-                      transactions.isEmpty
-                          ? SliverFillRemaining(child: _buildEmptyState())
-                          : _buildTransactionsList(transactions),
+              data: (transactions) {
+                if (transactions.isEmpty) {
+                  return SliverFillRemaining(child: _buildEmptyState());
+                }
+                return _buildTransactionsList(transactions);
+              },
               loading:
                   () => const SliverFillRemaining(
                     child: Center(
@@ -138,9 +140,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                     ),
                   ),
             ),
-            const SliverToBoxAdapter(
-              child: SizedBox(height: 100),
-            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
         floatingActionButton: Column(
@@ -167,6 +167,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
             ),
           ],
         ),
+        bottomNavigationBar: BottomBar(index: 1),
       ),
     );
   }
@@ -178,21 +179,16 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
       pinned: true,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => context.pop(),
-      ),
       flexibleSpace: FlexibleSpaceBar(
         expandedTitleScale: 1.0,
         title: const Text(
           'Semua Transaksi',
           style: TextStyle(
-            color: Colors.white,
+            color: AppTheme.textColor,
             fontWeight: FontWeight.bold,
-            fontSize: 20,
           ),
         ),
-        titlePadding: const EdgeInsets.only(left: 72, bottom: 16),
+        titlePadding: const EdgeInsets.only(left: 16, bottom: 16),
         background: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -481,8 +477,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     );
   }
 
-  Widget _buildTransactionsList(List<Transaction> transactions) {
-    final groupedTransactions = <String, List<Transaction>>{};
+  Widget _buildTransactionsList(List<db.Transaction> transactions) {
+    final groupedTransactions = <String, List<db.Transaction>>{};
     for (final transaction in transactions) {
       final dateKey = DateFormat('yyyy-MM-dd').format(transaction.date);
       if (!groupedTransactions.containsKey(dateKey)) {
@@ -556,7 +552,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     );
   }
 
-  Widget _buildTransactionItem(Transaction transaction, int index) {
+  Widget _buildTransactionItem(db.Transaction transaction, int index) {
     final currencyFormat = NumberFormat.currency(
       locale: 'id_ID',
       symbol: 'Rp ',
@@ -763,9 +759,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                     ),
                     const SizedBox(height: 24),
                     _buildFilterOption('Jenis Transaksi', Icons.swap_vert, [
-                      _buildFilterButton('Semua', tempSelectedIsIncome == null, () {
-                        setModalState(() => tempSelectedIsIncome = null);
-                      }),
+                      _buildFilterButton(
+                        'Semua',
+                        tempSelectedIsIncome == null,
+                        () {
+                          setModalState(() => tempSelectedIsIncome = null);
+                        },
+                      ),
                       _buildFilterButton(
                         'Pemasukan',
                         tempSelectedIsIncome == true,
@@ -804,13 +804,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                             decoration: BoxDecoration(
                               color: Colors.white.withAlpha(13),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white.withAlpha(26)),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(26),
+                              ),
                             ),
                             child: Text(
                               selectedStartDate != null
-                                  ? DateFormat('dd MMM yyyy').format(selectedStartDate!)
+                                  ? DateFormat(
+                                    'dd MMM yyyy',
+                                  ).format(selectedStartDate!)
                                   : 'Dari',
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -836,13 +843,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                             decoration: BoxDecoration(
                               color: Colors.white.withAlpha(13),
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.white.withAlpha(26)),
+                              border: Border.all(
+                                color: Colors.white.withAlpha(26),
+                              ),
                             ),
                             child: Text(
                               selectedEndDate != null
-                                  ? DateFormat('dd MMM yyyy').format(selectedEndDate!)
+                                  ? DateFormat(
+                                    'dd MMM yyyy',
+                                  ).format(selectedEndDate!)
                                   : 'Sampai',
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -914,68 +928,69 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(77),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Urutkan Berdasarkan',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                ...sortOptions.map(
-                  (option) => ListTile(
-                    title: Text(
-                      sortLabels[option]!,
-                      style: const TextStyle(color: Colors.white),
+      builder:
+          (context) => Container(
+            decoration: const BoxDecoration(
+              gradient: AppTheme.backgroundGradient,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 24,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(77),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                    leading: Radio<String>(
-                      value: option,
-                      groupValue: selectedSort,
-                      onChanged: (value) {
-                        setState(() => selectedSort = value!);
-                        _applyFilters();
-                        Navigator.pop(context);
-                      },
-                      activeColor: AppTheme.primaryColor,
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Urutkan Berdasarkan',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    onTap: () {
-                      setState(() => selectedSort = option);
-                      _applyFilters();
-                      Navigator.pop(context);
-                    },
-                  ),
+                    const SizedBox(height: 24),
+                    ...sortOptions.map(
+                      (option) => ListTile(
+                        title: Text(
+                          sortLabels[option]!,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        leading: Radio<String>(
+                          value: option,
+                          groupValue: selectedSort,
+                          onChanged: (value) {
+                            setState(() => selectedSort = value!);
+                            _applyFilters();
+                            Navigator.pop(context);
+                          },
+                          activeColor: AppTheme.primaryColor,
+                        ),
+                        onTap: () {
+                          setState(() => selectedSort = option);
+                          _applyFilters();
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -1035,7 +1050,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     );
   }
 
-  void _showTransactionDetails(Transaction transaction) {
+  void _showTransactionDetails(db.Transaction transaction) {
     context.push('/add-transaction', extra: transaction);
   }
 

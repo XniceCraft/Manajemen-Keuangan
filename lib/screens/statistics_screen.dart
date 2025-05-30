@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
+import '../database/database.dart' as db;
 import '../providers/providers.dart';
-import '../widgets/glassmorphic_card.dart';
 import '../theme/app_theme.dart';
-import '../models/transaction.dart';
+import '../widgets/bottom_bar.dart';
+import '../widgets/glassmorphic_card.dart';
+
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -62,9 +64,12 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
         title: const Text(
-          'Statistik',
-          style: TextStyle(color: AppTheme.textColor),
-        ),
+              'Statistik',
+              style: TextStyle(
+                color: AppTheme.textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppTheme.textColor),
@@ -130,119 +135,14 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
           ),
         ],
       ),
+      bottomNavigationBar: BottomBar(index: 3),
     );
   }
 
   Widget _buildSummaryTab(
     AsyncValue<Map<String, double>> balanceState,
-    AsyncValue<List<Transaction>> transactionsState,
+    AsyncValue<List<db.Transaction>> transactionsState,
   ) {
-    // return SingleChildScrollView(
-    //   padding: const EdgeInsets.all(16),
-    //   child: Column(
-    //     children: [
-    //       // Balance Cards
-    //       balanceState.when(
-    //         data: (balance) {
-    //           final income = balance['income'] ?? 0.0;
-    //           final expense = balance['expense'] ?? 0.0;
-    //           final total = income - expense;
-
-    //           return Column(
-    //             children: [
-    //               Row(
-    //                 crossAxisAlignment: CrossAxisAlignment.stretch,
-    //                 children: [
-    //                   Expanded(
-    //                     child: _buildBalanceCard(
-    //                       'Pemasukan',
-    //                       income,
-    //                       Icons.trending_up,
-    //                       AppTheme.secondaryColor,
-    //                     ),
-    //                   ),
-    //                   const SizedBox(width: 12),
-    //                   Expanded(
-    //                     child: _buildBalanceCard(
-    //                       'Pengeluaran',
-    //                       expense,
-    //                       Icons.trending_down,
-    //                       Colors.red,
-    //                     ),
-    //                   ),
-    //                 ],
-    //               ),
-    //               const SizedBox(height: 16),
-    //               _buildBalanceCard(
-    //                 'Saldo',
-    //                 total,
-    //                 total >= 0 ? Icons.account_balance_wallet : Icons.warning,
-    //                 total >= 0 ? AppTheme.primaryColor : Colors.orange,
-    //               ),
-    //             ],
-    //           );
-    //         },
-    //         loading: () => const CircularProgressIndicator(),
-    //         error:
-    //             (error, _) => Text(
-    //               'Error: $error',
-    //               style: const TextStyle(color: Colors.red),
-    //             ),
-    //       ),
-
-    //       const SizedBox(height: 24),
-
-    //       // Transaction Count
-    //       transactionsState.when(
-    //         data: (transactions) {
-    //           final incomeCount = transactions.where((t) => t.isIncome).length;
-    //           final expenseCount =
-    //               transactions.where((t) => !t.isIncome).length;
-
-    //           return GlassmorphicCard(
-    //             padding: const EdgeInsets.all(20),
-    //             child: Column(
-    //               crossAxisAlignment: CrossAxisAlignment.start,
-    //               children: [
-    //                 const Text(
-    //                   'Jumlah Transaksi',
-    //                   style: TextStyle(
-    //                     color: AppTheme.textColor,
-    //                     fontSize: 18,
-    //                     fontWeight: FontWeight.w600,
-    //                   ),
-    //                 ),
-    //                 const SizedBox(height: 16),
-    //                 Row(
-    //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    //                   children: [
-    //                     _buildStatItem(
-    //                       'Pemasukan',
-    //                       incomeCount,
-    //                       AppTheme.secondaryColor,
-    //                     ),
-    //                     _buildStatItem('Pengeluaran', expenseCount, Colors.red),
-    //                     _buildStatItem(
-    //                       'Total',
-    //                       transactions.length,
-    //                       AppTheme.primaryColor,
-    //                     ),
-    //                   ],
-    //                 ),
-    //               ],
-    //             ),
-    //           );
-    //         },
-    //         loading: () => const CircularProgressIndicator(),
-    //         error:
-    //             (error, _) => Text(
-    //               'Error: $error',
-    //               style: const TextStyle(color: Colors.red),
-    //             ),
-    //       ),
-    //     ],
-    //   ),
-    // );
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -350,7 +250,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     );
   }
 
-  Widget _buildChartTab(AsyncValue<List<Transaction>> transactionsState) {
+  Widget _buildChartTab(AsyncValue<List<db.Transaction>> transactionsState) {
     return transactionsState.when(
       data: (transactions) {
         if (transactions.isEmpty) {
@@ -556,7 +456,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
     );
   }
 
-  Widget _buildCategoryTab(AsyncValue<List<Transaction>> transactionsState) {
+  Widget _buildCategoryTab(AsyncValue<List<db.Transaction>> transactionsState) {
     return transactionsState.when(
       data: (transactions) {
         if (transactions.isEmpty) {

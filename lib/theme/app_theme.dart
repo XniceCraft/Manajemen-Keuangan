@@ -31,7 +31,7 @@ class AppTheme {
       primarySwatch: Colors.indigo,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardColor,
         elevation: 0,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

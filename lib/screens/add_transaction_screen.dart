@@ -5,13 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../models/transaction.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glassmorphic_card.dart';
+import '../database/database.dart' as drift;
+import 'package:drift/drift.dart' as drift;
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
-  final Transaction? transaction;
+  final drift.Transaction? transaction;
 
   const AddTransactionScreen({super.key, this.transaction});
 
@@ -97,26 +98,34 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       return;
     }
 
-    final transaction = Transaction(
-      id: widget.transaction?.id,
-      name: _nameController.text,
-      amount: double.parse(_amountController.text),
-      date: _selectedDate,
-      category: _selectedCategory,
-      paymentMethod: _selectedPaymentMethod,
-      isIncome: _isIncome,
-      description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+    final transactionCompanion = drift.TransactionsCompanion(
+      id: widget.transaction?.id != null ? drift.Value(widget.transaction!.id) : const drift.Value.absent(),
+      name: drift.Value(_nameController.text),
+      amount: drift.Value(double.parse(_amountController.text)),
+      date: drift.Value(_selectedDate),
+      category: drift.Value(_selectedCategory),
+      paymentMethod: drift.Value(_selectedPaymentMethod),
+      isIncome: drift.Value(_isIncome),
+      description: _descriptionController.text.isEmpty ? const drift.Value.absent() : drift.Value(_descriptionController.text),
     );
 
     try {
       if (widget.transaction == null) {
-        await ref.read(transactionsProvider.notifier).addTransaction(transaction);
+        await ref.read(transactionsProvider.notifier).addTransaction(transactionCompanion);
       } else {
-        await ref.read(transactionsProvider.notifier).updateTransaction(transaction);
+        final updated = drift.Transaction(
+          id: widget.transaction!.id,
+          name: _nameController.text,
+          amount: double.parse(_amountController.text),
+          date: _selectedDate,
+          category: _selectedCategory,
+          paymentMethod: _selectedPaymentMethod,
+          isIncome: _isIncome,
+          description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+        );
+        await ref.read(transactionsProvider.notifier).updateTransaction(updated);
       }
-      
       await ref.read(balanceProvider.notifier).loadMonthlyBalance(DateTime.now());
-      
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -162,7 +171,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
     if (confirm == true) {
       try {
-        await ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction!.id!);
+        await ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction!.id);
         await ref.read(balanceProvider.notifier).loadMonthlyBalance(DateTime.now());
         
         if (context.mounted) {

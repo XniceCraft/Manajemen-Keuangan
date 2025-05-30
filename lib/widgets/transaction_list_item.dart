@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../models/transaction.dart';
+import '../database/database.dart';
 import '../theme/app_theme.dart';
 
 class TransactionListItem extends StatelessWidget {

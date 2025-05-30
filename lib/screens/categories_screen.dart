@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../models/category.dart';
+import '../database/database.dart' as db;
 import '../providers/providers.dart';
-import '../widgets/glassmorphic_card.dart';
 import '../theme/app_theme.dart';
+import '../widgets/bottom_bar.dart';
+import '../widgets/glassmorphic_card.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});
@@ -31,48 +32,41 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(gradient: AppTheme.backgroundGradient),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(gradient: AppTheme.backgroundGradient),
+        child: Scaffold(
           backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: const Text(
-            'Kategori',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: const Text(
+              'Kategori',
+              style: TextStyle(
+                color: AppTheme.textColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: AppTheme.primaryColor,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white.withAlpha(153),
+              tabs: const [Tab(text: 'Pemasukan'), Tab(text: 'Pengeluaran')],
             ),
           ),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => context.pop(),
-          ),
-          bottom: TabBar(
+          body: TabBarView(
             controller: _tabController,
-            indicatorColor: AppTheme.primaryColor,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white.withAlpha(153),
-            tabs: const [
-              Tab(text: 'Pemasukan'),
-              Tab(text: 'Pengeluaran'),
-            ],
+            children: [_buildCategoriesList(true), _buildCategoriesList(false)],
           ),
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildCategoriesList(true),
-            _buildCategoriesList(false),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => context.push('/add-category'),
-          backgroundColor: AppTheme.primaryColor,
-          child: const Icon(Icons.add, color: Colors.white),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => context.push('/add-category'),
+            backgroundColor: AppTheme.primaryColor,
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
         ),
       ),
+      bottomNavigationBar: BottomBar(index: 2),
     );
   }
 
@@ -80,12 +74,13 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
     return Consumer(
       builder: (context, ref, child) {
         final categoriesAsync = ref.watch(categoriesProvider);
-        
+
         return categoriesAsync.when(
           data: (allCategories) {
-            final filteredCategories = allCategories
-                .where((category) => category.isIncome == isIncome)
-                .toList();
+            final filteredCategories =
+                allCategories
+                    .where((category) => category.isIncome == isIncome)
+                    .toList();
 
             if (filteredCategories.isEmpty) {
               return _buildEmptyState(isIncome);
@@ -107,23 +102,23 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
               ),
             );
           },
-          loading: () => const Center(
-            child: CircularProgressIndicator(
-              color: AppTheme.primaryColor,
-            ),
-          ),
-          error: (error, stack) => Center(
-            child: Text(
-              'Error: $error',
-              style: const TextStyle(color: Colors.red),
-            ),
-          ),
+          loading:
+              () => const Center(
+                child: CircularProgressIndicator(color: AppTheme.primaryColor),
+              ),
+          error:
+              (error, stack) => Center(
+                child: Text(
+                  'Error: $error',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
         );
       },
     );
   }
 
-  Widget _buildCategoryCard(Category category) {
+  Widget _buildCategoryCard(db.Category category) {
     final color = Color(int.parse('FF${category.color}', radix: 16));
     return GlassmorphicCard(
       child: InkWell(
@@ -164,9 +159,10 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: category.isIncome 
-                      ? Colors.green.withAlpha(51)
-                      : Colors.red.withAlpha(51),
+                  color:
+                      category.isIncome
+                          ? Colors.green.withAlpha(51)
+                          : Colors.red.withAlpha(51),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -190,11 +186,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.category,
-            size: 64,
-            color: Colors.white.withAlpha(77),
-          ),
+          Icon(Icons.category, size: 64, color: Colors.white.withAlpha(77)),
           const SizedBox(height: 16),
           Text(
             'Belum ada kategori ${isIncome ? 'pemasukan' : 'pengeluaran'}',
@@ -208,10 +200,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
           const SizedBox(height: 8),
           Text(
             'Tambahkan kategori untuk mengorganisir transaksi Anda',
-            style: TextStyle(
-              color: Colors.white.withAlpha(128),
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.white.withAlpha(128), fontSize: 14),
             textAlign: TextAlign.center,
           ),
         ],
@@ -219,159 +208,168 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
     );
   }
 
-  void _showCategoryOptions(Category category) {
+  void _showCategoryOptions(db.Category category) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(77),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 20),
-              
-              Row(
+      builder:
+          (context) => Container(
+            decoration: const BoxDecoration(
+              gradient: AppTheme.backgroundGradient,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 50,
-                    height: 50,
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
-                      color: Color(int.parse('FF${category.color}', radix: 16))
-                          .withAlpha(51),
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    child: Icon(
-                      _getIconData(category.icon),
-                      color: Color(int.parse('FF${category.color}', radix: 16)),
-                      size: 25,
+                      color: Colors.white.withAlpha(77),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          category.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                  const SizedBox(height: 20),
+
+                  Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Color(
+                            int.parse('FF${category.color}', radix: 16),
+                          ).withAlpha(51),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Icon(
+                          _getIconData(category.icon),
+                          color: Color(
+                            int.parse('FF${category.color}', radix: 16),
+                          ),
+                          size: 25,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              category.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              category.isIncome
+                                  ? 'Kategori Pemasukan'
+                                  : 'Kategori Pengeluaran',
+                              style: TextStyle(
+                                color: Colors.white.withAlpha(179),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            context.push('/add-category', extra: category);
+                          },
+                          icon: const Icon(Icons.edit, color: Colors.white),
+                          label: const Text(
+                            'Edit',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryColor,
+                            minimumSize: const Size(0, 50),
                           ),
                         ),
-                        Text(
-                          category.isIncome ? 'Kategori Pemasukan' : 'Kategori Pengeluaran',
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(179),
-                            fontSize: 14,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _confirmDeleteCategory(category),
+                          icon: const Icon(Icons.delete, color: Colors.white),
+                          label: const Text(
+                            'Hapus',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            minimumSize: const Size(0, 50),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              
-              const SizedBox(height: 30),
-              
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        context.push('/add-category', extra: category);
-                      },
-                      icon: const Icon(Icons.edit, color: Colors.white),
-                      label: const Text('Edit', style: TextStyle(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        minimumSize: const Size(0, 50),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _confirmDeleteCategory(category),
-                      icon: const Icon(Icons.delete, color: Colors.white),
-                      label: const Text('Hapus', style: TextStyle(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        minimumSize: const Size(0, 50),
-                      ),
-                    ),
-                  ),
-                ],
+            ),
+          ),
+    );
+  }
+
+  void _confirmDeleteCategory(db.Category category) {
+    Navigator.pop(context);
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: AppTheme.surfaceColor,
+            title: const Text(
+              'Hapus Kategori',
+              style: TextStyle(color: Colors.white),
+            ),
+            content: Text(
+              'Apakah Anda yakin ingin menghapus kategori "${category.name}"?\n\nTindakan ini tidak dapat dibatalkan.',
+              style: TextStyle(color: Colors.white.withAlpha(204)),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'Batal',
+                  style: TextStyle(color: Colors.white.withAlpha(179)),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _deleteCategory(category);
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Hapus'),
               ),
             ],
           ),
-        ),
-      ),
     );
   }
 
-  void _confirmDeleteCategory(Category category) {
-    Navigator.pop(context);
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
-        title: const Text(
-          'Hapus Kategori',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: Text(
-          'Apakah Anda yakin ingin menghapus kategori "${category.name}"?\n\nTindakan ini tidak dapat dibatalkan.',
-          style: TextStyle(color: Colors.white.withAlpha(204)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Batal',
-              style: TextStyle(color: Colors.white.withAlpha(179)),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _deleteCategory(category);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            child: const Text('Hapus'),
-          ),
-        ],
+  void _deleteCategory(db.Category category) {
+    ref.read(categoriesProvider.notifier).deleteCategory(category.id);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Kategori "${category.name}" berhasil dihapus'),
+        backgroundColor: Colors.green,
       ),
     );
-  }
-
-  void _deleteCategory(Category category) {
-    if (category.id != null) {
-      ref.read(categoriesProvider.notifier).deleteCategory(category.id!);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Kategori "${category.name}" berhasil dihapus'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    }
   }
 
   IconData _getIconData(String iconName) {
@@ -386,7 +384,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
       'heart': Icons.favorite,
       'file-text': Icons.description,
     };
-    
+
     return iconMap[iconName] ?? Icons.category;
   }
 }

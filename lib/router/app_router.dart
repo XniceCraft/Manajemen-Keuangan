@@ -5,7 +5,7 @@ import '../screens/transactions_screen.dart';
 import '../screens/categories_screen.dart';
 import '../screens/add_category_screen.dart';
 import '../screens/statistics_screen.dart';
-import '../models/transaction.dart';
+import '../database/database.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',

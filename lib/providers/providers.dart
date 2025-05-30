@@ -1,7 +1,6 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/transaction.dart';
-import '../models/category.dart';
+import '../database/database.dart';
 import '../services/database_helper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final databaseProvider = Provider<DatabaseHelper>((ref) {
   return DatabaseHelper();
@@ -50,7 +49,7 @@ class TransactionsNotifier extends StateNotifier<AsyncValue<List<Transaction>>> 
     }
   }
 
-  Future<void> addTransaction(Transaction transaction) async {
+  Future<void> addTransaction(TransactionsCompanion transaction) async {
     try {
       await _db.insertTransaction(transaction);
       await loadTransactions();
@@ -95,7 +94,7 @@ class CategoriesNotifier extends StateNotifier<AsyncValue<List<Category>>> {
     }
   }
 
-  Future<void> addCategory(Category category) async {
+  Future<void> addCategory(CategoriesCompanion category) async {
     try {
       await _db.insertCategory(category);
       await loadCategories();

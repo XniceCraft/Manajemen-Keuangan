@@ -1,3 +1,4 @@
+import 'package:finance_management/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -68,7 +69,7 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: AppTheme.primaryColor,
         child: const Icon(LucideIcons.plus, color: Colors.white),
       ),
-      bottomNavigationBar: _buildBottomNavBar(context),
+      bottomNavigationBar: BottomBar(index: 0),
     );
   }
 
@@ -393,62 +394,6 @@ class HomeScreen extends ConsumerWidget {
             style: const TextStyle(color: AppTheme.errorColor),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildBottomNavBar(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(26),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        selectedItemColor: AppTheme.primaryColor,
-        unselectedItemColor: AppTheme.textSecondaryColor,
-        currentIndex: 0,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              break;
-            case 1:
-              context.push('/transactions');
-              break;
-            case 2:
-              context.push('/categories');
-              break;
-            case 3:
-              context.push('/statistics');
-              break;
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.home),
-            label: 'Beranda',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.list),
-            label: 'Transaksi',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.tag),
-            label: 'Kategori',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.barChart3),
-            label: 'Statistik',
-          ),
-        ],
       ),
     );
   }

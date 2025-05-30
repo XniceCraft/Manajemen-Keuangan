@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../models/category.dart';
+import 'package:drift/drift.dart' show Value;
 import '../providers/providers.dart';
 import '../widgets/glassmorphic_card.dart';
 import '../theme/app_theme.dart';
+import '../database/database.dart' as drift;
 
 class CategoryCard extends GlassmorphicCard {
   final bool isSelected;
@@ -37,7 +38,7 @@ class CategoryCard extends GlassmorphicCard {
 }
 
 class AddCategoryScreen extends ConsumerStatefulWidget {
-  final Category? category;
+  final drift.Category? category;
 
   const AddCategoryScreen({super.key, this.category});
 
@@ -500,17 +501,24 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final category = Category(
-        id: widget.category?.id,
-        name: _nameController.text.trim(),
-        icon: _selectedIcon,
-        color: _selectedColor,
-        isIncome: _isIncome,
+      final categoryCompanion = drift.CategoriesCompanion(
+        id: widget.category?.id != null ? Value(widget.category!.id) : const Value.absent(),
+        name: Value(_nameController.text.trim()),
+        icon: Value(_selectedIcon),
+        color: Value(_selectedColor),
+        isIncome: Value(_isIncome),
       );
 
       if (widget.category != null) {
         // Update existing category
-        await ref.read(categoriesProvider.notifier).updateCategory(category);
+        final updated = drift.Category(
+          id: widget.category!.id,
+          name: _nameController.text.trim(),
+          icon: _selectedIcon,
+          color: _selectedColor,
+          isIncome: _isIncome,
+        );
+        await ref.read(categoriesProvider.notifier).updateCategory(updated);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -521,7 +529,7 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
         }
       } else {
         // Add new category
-        await ref.read(categoriesProvider.notifier).addCategory(category);
+        await ref.read(categoriesProvider.notifier).addCategory(categoryCompanion);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
