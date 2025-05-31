@@ -12,33 +12,33 @@ final GoRouter appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => const HomeScreen(),
+      pageBuilder: (context, state) => const NoTransitionPage(child: HomeScreen()),
     ),
     GoRoute(
       path: '/add-transaction',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final transaction = state.extra as Transaction?;
-        return AddTransactionScreen(transaction: transaction);
+        return NoTransitionPage(child: AddTransactionScreen(transaction: transaction));
       },
     ),
     GoRoute(
       path: '/transactions',
-      builder: (context, state) => const TransactionsScreen(),
+      pageBuilder: (context, state) => const NoTransitionPage(child: TransactionsScreen()),
     ),
     GoRoute(
       path: '/categories',
-      builder: (context, state) => const CategoriesScreen(),
+      pageBuilder: (context, state) => const NoTransitionPage(child: CategoriesScreen()),
     ),
     GoRoute(
       path: '/add-category',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final category = state.extra as Category?;
-        return AddCategoryScreen(category: category);
+        return NoTransitionPage(child: AddCategoryScreen(category: category));
       },
     ),
     GoRoute(
       path: '/statistics',
-      builder: (context, state) => const StatisticsScreen(),
+      pageBuilder: (context, state) => const NoTransitionPage(child: StatisticsScreen()),
     ),
   ],
 );

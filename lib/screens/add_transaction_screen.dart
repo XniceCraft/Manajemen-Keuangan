@@ -22,7 +22,11 @@ class CurrencyInputFormatter extends TextInputFormatter {
     String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
     if (newText.isEmpty) return newValue.copyWith(text: '');
     final number = int.parse(newText);
-    final formatted = NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(number);
+    final formatted = NumberFormat.currency(
+      locale: 'id',
+      symbol: '',
+      decimalDigits: 0,
+    ).format(number);
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: formatted.length),
@@ -64,8 +68,11 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   void _populateFields() {
     final transaction = widget.transaction!;
     _nameController.text = transaction.name;
-    // Format amount as rupiah
-    _amountController.text = NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(transaction.amount);
+    _amountController.text = NumberFormat.currency(
+      locale: 'id',
+      symbol: '',
+      decimalDigits: 0,
+    ).format(transaction.amount);
     _descriptionController.text = transaction.description ?? '';
     _selectedDate = transaction.date;
     _selectedCategory = transaction.category;
@@ -119,23 +126,24 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       return;
     }
 
-    // Ambil nilai amount dan parsing ke double
     final amountText = _amountController.text.replaceAll('.', '');
     final amount = double.tryParse(amountText) ?? 0;
 
     final transactionCompanion = drift.TransactionsCompanion(
-      id: widget.transaction?.id != null
-          ? drift.Value(widget.transaction!.id)
-          : const drift.Value.absent(),
+      id:
+          widget.transaction?.id != null
+              ? drift.Value(widget.transaction!.id)
+              : const drift.Value.absent(),
       name: drift.Value(_nameController.text),
       amount: drift.Value(amount),
       date: drift.Value(_selectedDate),
       category: drift.Value(_selectedCategory),
       paymentMethod: drift.Value(_selectedPaymentMethod),
       isIncome: drift.Value(_isIncome),
-      description: _descriptionController.text.isEmpty
-          ? const drift.Value.absent()
-          : drift.Value(_descriptionController.text),
+      description:
+          _descriptionController.text.isEmpty
+              ? const drift.Value.absent()
+              : drift.Value(_descriptionController.text),
     );
 
     try {
@@ -309,8 +317,13 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => context.go('/'),
+          TextButton(
+            onPressed: () => context.go('/'),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: AppTheme.glassmorphismDecoration,
@@ -357,21 +370,26 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         child: Row(
           children: [
             Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _isIncome = false),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color:
-                        !_isIncome
-                            ? AppTheme.errorColor.withAlpha(51)
-                            : Colors.transparent,
+              child: TextButton(
+                onPressed: () => setState(() => _isIncome = false),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  backgroundColor:
+                      !_isIncome
+                          ? AppTheme.errorColor.withAlpha(51)
+                          : Colors.transparent,
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color:
-                          !_isIncome ? AppTheme.errorColor : Colors.transparent,
-                    ),
                   ),
+                  side: BorderSide(
+                    color:
+                        !_isIncome ? AppTheme.errorColor : Colors.transparent,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -401,23 +419,26 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _isIncome = true),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color:
-                        _isIncome
-                            ? AppTheme.successColor.withAlpha(51)
-                            : Colors.transparent,
+              child: TextButton(
+                onPressed: () => setState(() => _isIncome = true),
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  backgroundColor:
+                      _isIncome
+                          ? AppTheme.successColor.withAlpha(51)
+                          : Colors.transparent,
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color:
-                          _isIncome
-                              ? AppTheme.successColor
-                              : Colors.transparent,
-                    ),
                   ),
+                  side: BorderSide(
+                    color:
+                        _isIncome ? AppTheme.successColor : Colors.transparent,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -563,15 +584,20 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               },
             ),
             const SizedBox(height: 16),
-            GestureDetector(
-              onTap: _selectDate,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceColor.withAlpha(80),
+            TextButton(
+              onPressed: _selectDate,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                backgroundColor: AppTheme.surfaceColor.withAlpha(80),
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withAlpha(60)),
                 ),
+                side: BorderSide(color: Colors.white.withAlpha(60)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
                     const Icon(
@@ -725,14 +751,14 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       onPressed: _saveTransaction,
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.primaryColor,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 25),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Text(
         widget.transaction == null ? 'Simpan Transaksi' : 'Perbarui Transaksi',
         style: const TextStyle(
           color: Colors.white,
-          fontSize: 16,
+          fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
       ),

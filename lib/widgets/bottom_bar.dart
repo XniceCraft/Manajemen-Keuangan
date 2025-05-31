@@ -6,14 +6,11 @@ import '../theme/app_theme.dart';
 class BottomBar extends StatelessWidget {
   final int index;
 
-  const BottomBar({
-    super.key,
-    required this.index
-  });
+  const BottomBar({super.key, required this.index});
 
   @override
   Widget build(BuildContext context) {
-     return Container(
+    return Container(
       decoration: BoxDecoration(
         color: AppTheme.surfaceColor,
         boxShadow: [
@@ -34,7 +31,7 @@ class BottomBar extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-            context.go('/');
+              context.go('/');
               break;
             case 1:
               context.go('/transactions');

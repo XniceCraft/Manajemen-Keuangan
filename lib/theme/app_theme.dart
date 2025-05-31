@@ -24,68 +24,56 @@ class AppTheme {
     colors: [Color(0xFF0F0F23), Color(0xFF1A1A2E)],
   );
 
-  static ThemeData get darkTheme {
+  static ThemeData get theme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       primarySwatch: Colors.indigo,
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
-      cardTheme: CardThemeData(
-        color: cardColor,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        titleTextStyle: TextStyle(
-          color: textColor,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+      fontFamily: 'Outfit',
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: AppTheme.textColor),
+        displayMedium: TextStyle(color: AppTheme.textColor),
+        displaySmall: TextStyle(color: AppTheme.textColor),
+        headlineLarge: TextStyle(color: AppTheme.textColor),
+        headlineMedium: TextStyle(color: AppTheme.textColor),
+        headlineSmall: TextStyle(color: AppTheme.textColor),
+        titleLarge: TextStyle(color: AppTheme.textColor),
+        titleMedium: TextStyle(color: AppTheme.textColor),
+        titleSmall: TextStyle(color: AppTheme.textColor),
+        bodyLarge: TextStyle(color: AppTheme.textColor),
+        bodyMedium: TextStyle(color: AppTheme.textColor),
+        bodySmall: TextStyle(color: AppTheme.textSecondaryColor),
+        labelLarge: TextStyle(color: AppTheme.textColor),
+        labelMedium: TextStyle(color: AppTheme.textColor),
+        labelSmall: TextStyle(color: AppTheme.textSecondaryColor),
+      ).apply(fontFamily: 'Outfit'),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: TextStyle(
+            color: AppTheme.textColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Outfit'
+          )
         ),
-        iconTheme: IconThemeData(color: textColor),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          padding: EdgeInsets.zero,
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          textStyle: TextStyle(
+            color: AppTheme.textColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            fontFamily: 'Outfit'
+          )
         ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: surfaceColor,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        labelStyle: const TextStyle(color: textSecondaryColor),
-        hintStyle: const TextStyle(color: textSecondaryColor),
-      ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
-          color: textColor,
-          fontSize: 32,
-          fontWeight: FontWeight.bold,
-        ),
-        headlineMedium: TextStyle(
-          color: textColor,
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-        ),
-        headlineSmall: TextStyle(
-          color: textColor,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-        ),
-        bodyLarge: TextStyle(color: textColor, fontSize: 16),
-        bodyMedium: TextStyle(color: textColor, fontSize: 14),
-        bodySmall: TextStyle(color: textSecondaryColor, fontSize: 12),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: surfaceColor,

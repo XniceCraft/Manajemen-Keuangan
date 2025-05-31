@@ -27,16 +27,18 @@ class TransactionListItem extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: (transaction.isIncome 
-                ? AppTheme.successColor 
-                : AppTheme.errorColor).withAlpha(26),
+            color: (transaction.isIncome
+                    ? AppTheme.successColor
+                    : AppTheme.errorColor)
+                .withAlpha(26),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             _getCategoryIcon(transaction.category),
-            color: transaction.isIncome 
-                ? AppTheme.successColor 
-                : AppTheme.errorColor,
+            color:
+                transaction.isIncome
+                    ? AppTheme.successColor
+                    : AppTheme.errorColor,
             size: 24,
           ),
         ),
@@ -92,15 +94,12 @@ class TransactionListItem extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              '${transaction.isIncome ? '+' : '-'}${NumberFormat.currency(
-                locale: 'id_ID',
-                symbol: 'Rp ',
-                decimalDigits: 0,
-              ).format(transaction.amount)}',
+              '${transaction.isIncome ? '+' : '-'}${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(transaction.amount)}',
               style: TextStyle(
-                color: transaction.isIncome 
-                    ? AppTheme.successColor 
-                    : AppTheme.errorColor,
+                color:
+                    transaction.isIncome
+                        ? AppTheme.successColor
+                        : AppTheme.errorColor,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),

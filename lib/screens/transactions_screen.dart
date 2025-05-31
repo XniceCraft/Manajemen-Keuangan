@@ -153,17 +153,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                 child: const Icon(Icons.keyboard_arrow_up, color: Colors.white),
               ),
             if (_showScrollToTop) const SizedBox(height: 16),
-            FloatingActionButton.extended(
+            FloatingActionButton(
               onPressed: () => context.go('/add-transaction'),
               backgroundColor: AppTheme.primaryColor,
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text(
-                'Tambah',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              child: const Icon(Icons.add, color: Colors.white),
             ),
           ],
         ),
@@ -510,7 +503,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(13),
+                  color: Colors.white.withAlpha(26),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.white.withAlpha(26)),
                 ),
@@ -706,11 +699,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
+                fontSize: 12,
               ),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
             ),
           ),
         ],

@@ -374,25 +374,26 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
               final iconData = _availableIcons[index];
               final isSelected = _selectedIcon == iconData['name'];
 
-              return GestureDetector(
-                onTap: () => setState(() => _selectedIcon = iconData['name']),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color:
-                        isSelected
-                            ? AppTheme.primaryColor.withAlpha(77)
-                            : Colors.white.withAlpha(26),
+              return TextButton(
+                onPressed:
+                    () => setState(() => _selectedIcon = iconData['name']),
+                style: TextButton.styleFrom(
+                  backgroundColor:
+                      isSelected
+                          ? AppTheme.primaryColor.withAlpha(77)
+                          : Colors.white.withAlpha(26),
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
-                    border:
-                        isSelected
-                            ? Border.all(color: AppTheme.primaryColor, width: 2)
-                            : null,
                   ),
-                  child: Icon(
-                    iconData['icon'],
-                    color: isSelected ? AppTheme.primaryColor : Colors.white70,
-                    size: 24,
-                  ),
+                  side:
+                      isSelected
+                          ? BorderSide(color: AppTheme.primaryColor, width: 2)
+                          : null,
+                ),
+                child: Icon(
+                  iconData['icon'],
+                  color: isSelected ? AppTheme.primaryColor : Colors.white70,
+                  size: 24,
                 ),
               );
             },
@@ -431,26 +432,22 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
               final color = Color(int.parse('FF$colorHex', radix: 16));
               final isSelected = _selectedColor == colorHex;
 
-              return GestureDetector(
-                onTap: () => setState(() => _selectedColor = colorHex),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: color,
+              return TextButton(
+                onPressed: () => setState(() => _selectedColor = colorHex),
+                style: TextButton.styleFrom(
+                  backgroundColor: color,
+                  shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(25),
-                    border:
-                        isSelected
-                            ? Border.all(color: Colors.white, width: 3)
-                            : null,
                   ),
-                  child:
+                  side:
                       isSelected
-                          ? const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 20,
-                          )
+                          ? BorderSide(color: Colors.white, width: 3)
                           : null,
                 ),
+                child:
+                    isSelected
+                        ? Icon(Icons.check, color: Colors.white, size: 20)
+                        : const SizedBox.shrink(),
               );
             },
           ),
@@ -487,8 +484,8 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
                       : 'Simpan Kategori',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
       ),
@@ -502,7 +499,10 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
 
     try {
       final categoryCompanion = drift.CategoriesCompanion(
-        id: widget.category?.id != null ? Value(widget.category!.id) : const Value.absent(),
+        id:
+            widget.category?.id != null
+                ? Value(widget.category!.id)
+                : const Value.absent(),
         name: Value(_nameController.text.trim()),
         icon: Value(_selectedIcon),
         color: Value(_selectedColor),
@@ -529,7 +529,9 @@ class _AddCategoryScreenState extends ConsumerState<AddCategoryScreen> {
         }
       } else {
         // Add new category
-        await ref.read(categoriesProvider.notifier).addCategory(categoryCompanion);
+        await ref
+            .read(categoriesProvider.notifier)
+            .addCategory(categoryCompanion);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
