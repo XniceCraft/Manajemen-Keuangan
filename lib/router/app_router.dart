@@ -31,7 +31,10 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/add-category',
-      builder: (context, state) => const AddCategoryScreen(),
+      builder: (context, state) {
+        final category = state.extra as Category?;
+        return AddCategoryScreen(category: category);
+      },
     ),
     GoRoute(
       path: '/statistics',

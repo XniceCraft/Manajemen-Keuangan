@@ -65,7 +65,7 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/add-transaction'),
+        onPressed: () => context.go('/add-transaction'),
         backgroundColor: AppTheme.primaryColor,
         child: const Icon(LucideIcons.plus, color: Colors.white),
       ),
@@ -98,7 +98,7 @@ class HomeScreen extends ConsumerWidget {
             ],
           ),
           TextButton(
-            onPressed: () => context.push('/statistics'),
+            onPressed: () => context.go('/statistics'),
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               minimumSize: Size.zero,
@@ -253,7 +253,7 @@ class HomeScreen extends ConsumerWidget {
               'Lihat Semua',
               LucideIcons.list,
               AppTheme.secondaryColor,
-              () => context.push('/transactions'),
+              () => context.go('/transactions'),
             ),
           ),
           const SizedBox(width: 12),
@@ -262,7 +262,7 @@ class HomeScreen extends ConsumerWidget {
               'Kategori',
               LucideIcons.tag,
               AppTheme.warningColor,
-              () => context.push('/categories'),
+              () => context.go('/categories'),
             ),
           ),
         ],
@@ -376,7 +376,7 @@ class HomeScreen extends ConsumerWidget {
               itemBuilder: (contextListView, index) {
                 return TransactionListItem(
                   transaction: recentTransactions[index],
-                  onTap: () => context.push(
+                  onTap: () => context.go(
                     '/add-transaction',
                     extra: recentTransactions[index],
                   ),

@@ -1,15 +1,34 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:finance_management/widgets/transactions/chip_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:flutter/services.dart';
 import '../providers/providers.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glassmorphic_card.dart';
 import '../database/database.dart' as drift;
 import 'package:drift/drift.dart' as drift;
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (newText.isEmpty) return newValue.copyWith(text: '');
+    final number = int.parse(newText);
+    final formatted = NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(number);
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
   final drift.Transaction? transaction;
@@ -17,7 +36,8 @@ class AddTransactionScreen extends ConsumerStatefulWidget {
   const AddTransactionScreen({super.key, this.transaction});
 
   @override
-  ConsumerState<AddTransactionScreen> createState() => _AddTransactionScreenState();
+  ConsumerState<AddTransactionScreen> createState() =>
+      _AddTransactionScreenState();
 }
 
 class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
@@ -44,7 +64,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   void _populateFields() {
     final transaction = widget.transaction!;
     _nameController.text = transaction.name;
-    _amountController.text = transaction.amount.toString();
+    // Format amount as rupiah
+    _amountController.text = NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0).format(transaction.amount);
     _descriptionController.text = transaction.description ?? '';
     _selectedDate = transaction.date;
     _selectedCategory = transaction.category;
@@ -98,42 +119,63 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       return;
     }
 
+    // Ambil nilai amount dan parsing ke double
+    final amountText = _amountController.text.replaceAll('.', '');
+    final amount = double.tryParse(amountText) ?? 0;
+
     final transactionCompanion = drift.TransactionsCompanion(
-      id: widget.transaction?.id != null ? drift.Value(widget.transaction!.id) : const drift.Value.absent(),
+      id: widget.transaction?.id != null
+          ? drift.Value(widget.transaction!.id)
+          : const drift.Value.absent(),
       name: drift.Value(_nameController.text),
-      amount: drift.Value(double.parse(_amountController.text)),
+      amount: drift.Value(amount),
       date: drift.Value(_selectedDate),
       category: drift.Value(_selectedCategory),
       paymentMethod: drift.Value(_selectedPaymentMethod),
       isIncome: drift.Value(_isIncome),
-      description: _descriptionController.text.isEmpty ? const drift.Value.absent() : drift.Value(_descriptionController.text),
+      description: _descriptionController.text.isEmpty
+          ? const drift.Value.absent()
+          : drift.Value(_descriptionController.text),
     );
 
     try {
       if (widget.transaction == null) {
-        await ref.read(transactionsProvider.notifier).addTransaction(transactionCompanion);
+        await ref
+            .read(transactionsProvider.notifier)
+            .addTransaction(transactionCompanion);
       } else {
         final updated = drift.Transaction(
           id: widget.transaction!.id,
           name: _nameController.text,
-          amount: double.parse(_amountController.text),
+          amount: amount,
           date: _selectedDate,
           category: _selectedCategory,
           paymentMethod: _selectedPaymentMethod,
           isIncome: _isIncome,
-          description: _descriptionController.text.isEmpty ? null : _descriptionController.text,
+          description:
+              _descriptionController.text.isEmpty
+                  ? null
+                  : _descriptionController.text,
         );
-        await ref.read(transactionsProvider.notifier).updateTransaction(updated);
+        await ref
+            .read(transactionsProvider.notifier)
+            .updateTransaction(updated);
       }
-      await ref.read(balanceProvider.notifier).loadMonthlyBalance(DateTime.now());
+      await ref
+          .read(balanceProvider.notifier)
+          .loadMonthlyBalance(DateTime.now());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.transaction == null ? 'Transaksi berhasil ditambahkan' : 'Transaksi berhasil diperbarui'),
+            content: Text(
+              widget.transaction == null
+                  ? 'Transaksi berhasil ditambahkan'
+                  : 'Transaksi berhasil diperbarui',
+            ),
             backgroundColor: AppTheme.successColor,
           ),
         );
-        context.pop();
+        context.go('/');
       }
     } catch (e) {
       if (context.mounted) {
@@ -152,28 +194,45 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.surfaceColor,
-        title: const Text('Hapus Transaksi', style: TextStyle(color: AppTheme.textColor)),
-        content: const Text('Apakah Anda yakin ingin menghapus transaksi ini?', style: TextStyle(color: AppTheme.textSecondaryColor)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Batal', style: TextStyle(color: AppTheme.textSecondaryColor)),
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: AppTheme.surfaceColor,
+            title: const Text(
+              'Hapus Transaksi',
+              style: TextStyle(color: AppTheme.textColor),
+            ),
+            content: const Text(
+              'Apakah Anda yakin ingin menghapus transaksi ini?',
+              style: TextStyle(color: AppTheme.textSecondaryColor),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text(
+                  'Batal',
+                  style: TextStyle(color: AppTheme.textSecondaryColor),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(
+                  'Hapus',
+                  style: TextStyle(color: AppTheme.errorColor),
+                ),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Hapus', style: TextStyle(color: AppTheme.errorColor)),
-          ),
-        ],
-      ),
     );
 
     if (confirm == true) {
       try {
-        await ref.read(transactionsProvider.notifier).deleteTransaction(widget.transaction!.id);
-        await ref.read(balanceProvider.notifier).loadMonthlyBalance(DateTime.now());
-        
+        await ref
+            .read(transactionsProvider.notifier)
+            .deleteTransaction(widget.transaction!.id);
+        await ref
+            .read(balanceProvider.notifier)
+            .loadMonthlyBalance(DateTime.now());
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -181,7 +240,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               backgroundColor: AppTheme.successColor,
             ),
           );
-          context.pop();
+          context.go('/');
         }
       } catch (e) {
         if (context.mounted) {
@@ -251,7 +310,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => context.pop(),
+            onTap: () => context.go('/'),
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: AppTheme.glassmorphismDecoration,
@@ -264,7 +323,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              widget.transaction == null ? 'Tambah Transaksi' : 'Edit Transaksi',
+              widget.transaction == null
+                  ? 'Tambah Transaksi'
+                  : 'Edit Transaksi',
               style: const TextStyle(
                 color: AppTheme.textColor,
                 fontSize: 20,
@@ -301,14 +362,14 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: !_isIncome
-                        ? AppTheme.errorColor.withAlpha(51)
-                        : Colors.transparent,
+                    color:
+                        !_isIncome
+                            ? AppTheme.errorColor.withAlpha(51)
+                            : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: !_isIncome
-                          ? AppTheme.errorColor
-                          : Colors.transparent,
+                      color:
+                          !_isIncome ? AppTheme.errorColor : Colors.transparent,
                     ),
                   ),
                   child: Row(
@@ -316,18 +377,20 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     children: [
                       Icon(
                         LucideIcons.trendingDown,
-                        color: !_isIncome
-                            ? AppTheme.errorColor
-                            : AppTheme.textSecondaryColor,
+                        color:
+                            !_isIncome
+                                ? AppTheme.errorColor
+                                : AppTheme.textSecondaryColor,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Pengeluaran',
                         style: TextStyle(
-                          color: !_isIncome
-                              ? AppTheme.errorColor
-                              : AppTheme.textSecondaryColor,
+                          color:
+                              !_isIncome
+                                  ? AppTheme.errorColor
+                                  : AppTheme.textSecondaryColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -343,14 +406,16 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: _isIncome
-                        ? AppTheme.successColor.withAlpha(51)
-                        : Colors.transparent,
+                    color:
+                        _isIncome
+                            ? AppTheme.successColor.withAlpha(51)
+                            : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: _isIncome
-                          ? AppTheme.successColor
-                          : Colors.transparent,
+                      color:
+                          _isIncome
+                              ? AppTheme.successColor
+                              : Colors.transparent,
                     ),
                   ),
                   child: Row(
@@ -358,18 +423,20 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     children: [
                       Icon(
                         LucideIcons.trendingUp,
-                        color: _isIncome
-                            ? AppTheme.successColor
-                            : AppTheme.textSecondaryColor,
+                        color:
+                            _isIncome
+                                ? AppTheme.successColor
+                                : AppTheme.textSecondaryColor,
                         size: 20,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Pemasukan',
                         style: TextStyle(
-                          color: _isIncome
-                              ? AppTheme.successColor
-                              : AppTheme.textSecondaryColor,
+                          color:
+                              _isIncome
+                                  ? AppTheme.successColor
+                                  : AppTheme.textSecondaryColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -402,10 +469,17 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _nameController,
-              style: const TextStyle(color: AppTheme.textColor, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: AppTheme.textColor,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: InputDecoration(
                 labelText: 'Nama Transaksi',
-                labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                labelStyle: const TextStyle(
+                  color: AppTheme.textColor,
+                  fontWeight: FontWeight.w300,
+                  fontSize: 14,
+                ),
                 hintText: 'Masukkan nama transaksi',
                 hintStyle: TextStyle(color: Colors.white.withAlpha(128)),
                 filled: true,
@@ -416,9 +490,15 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+                  borderSide: const BorderSide(
+                    color: AppTheme.primaryColor,
+                    width: 2,
+                  ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -430,15 +510,26 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _amountController,
-              style: const TextStyle(color: AppTheme.textColor, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: AppTheme.textColor,
+                fontWeight: FontWeight.w500,
+              ),
               keyboardType: TextInputType.number,
+              inputFormatters: [CurrencyInputFormatter()],
               decoration: InputDecoration(
                 labelText: 'Jumlah',
-                labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                labelStyle: const TextStyle(
+                  color: AppTheme.textColor,
+                  fontWeight: FontWeight.w300,
+                  fontSize: 14,
+                ),
                 hintText: 'Masukkan jumlah',
                 hintStyle: TextStyle(color: Colors.white.withAlpha(128)),
                 prefixText: 'Rp ',
-                prefixStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                prefixStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
                 filled: true,
                 fillColor: AppTheme.surfaceColor.withAlpha(80),
                 enabledBorder: OutlineInputBorder(
@@ -447,18 +538,25 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+                  borderSide: const BorderSide(
+                    color: AppTheme.primaryColor,
+                    width: 2,
+                  ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Jumlah harus diisi';
                 }
-                if (double.tryParse(value) == null) {
+                final clean = value.replaceAll('.', '');
+                if (double.tryParse(clean) == null) {
                   return 'Jumlah harus berupa angka';
                 }
-                if (double.parse(value) <= 0) {
+                if (double.parse(clean) <= 0) {
                   return 'Jumlah harus lebih dari 0';
                 }
                 return null;
@@ -520,44 +618,34 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             const SizedBox(height: 16),
             categoriesAsync.when(
               data: (categories) {
-                final filteredCategories = categories.where((cat) => cat.isIncome == _isIncome).toList();
-                
+                final filteredCategories =
+                    categories
+                        .where((cat) => cat.isIncome == _isIncome)
+                        .toList();
+
                 return Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: filteredCategories.map((category) {
-                    final isSelected = _selectedCategory == category.name;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedCategory = category.name),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppTheme.primaryColor.withAlpha(51)
-                              : AppTheme.surfaceColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppTheme.primaryColor
-                                : Colors.transparent,
-                          ),
-                        ),
-                        child: Text(
-                          category.name,
-                          style: TextStyle(
-                            color: isSelected
-                                ? AppTheme.primaryColor
-                                : AppTheme.textColor,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                  children:
+                      filteredCategories.map((category) {
+                        final isSelected = _selectedCategory == category.name;
+                        return ChipButton(
+                          name: category.name,
+                          onPressed:
+                              () => setState(
+                                () => _selectedCategory = category.name,
+                              ),
+                          isSelected: isSelected,
+                        );
+                      }).toList(),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Text('Error: $error', style: const TextStyle(color: AppTheme.errorColor)),
+              error:
+                  (error, _) => Text(
+                    'Error: $error',
+                    style: const TextStyle(color: AppTheme.errorColor),
+                  ),
             ),
           ],
         ),
@@ -584,35 +672,16 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _paymentMethods.map((method) {
-                final isSelected = _selectedPaymentMethod == method;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedPaymentMethod = method),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppTheme.secondaryColor.withAlpha(51)
-                          : AppTheme.surfaceColor,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected
-                            ? AppTheme.secondaryColor
-                            : Colors.transparent,
-                      ),
-                    ),
-                    child: Text(
-                      method,
-                      style: TextStyle(
-                        color: isSelected
-                            ? AppTheme.secondaryColor
-                            : AppTheme.textColor,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+              children:
+                  _paymentMethods.map((method) {
+                    final isSelected = _selectedPaymentMethod == method;
+                    return ChipButton(
+                      name: method,
+                      onPressed:
+                          () => setState(() => _selectedPaymentMethod = method),
+                      isSelected: isSelected,
+                    );
+                  }).toList(),
             ),
           ],
         ),
@@ -657,9 +726,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppTheme.primaryColor,
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       child: Text(
         widget.transaction == null ? 'Simpan Transaksi' : 'Perbarui Transaksi',

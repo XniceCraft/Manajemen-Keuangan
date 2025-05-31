@@ -506,7 +506,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
                       ),
                       const SizedBox(height: 20),
                       AspectRatio(
-                        aspectRatio: 1.2, // Responsive square-ish pie chart
+                        aspectRatio: 1,
                         child: PieChart(
                           PieChartData(
                             sectionsSpace: 2,

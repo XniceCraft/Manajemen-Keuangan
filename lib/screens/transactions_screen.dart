@@ -154,7 +154,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
               ),
             if (_showScrollToTop) const SizedBox(height: 16),
             FloatingActionButton.extended(
-              onPressed: () => context.push('/add-transaction'),
+              onPressed: () => context.go('/add-transaction'),
               backgroundColor: AppTheme.primaryColor,
               icon: const Icon(Icons.add, color: Colors.white),
               label: const Text(
@@ -699,7 +699,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
           ),
           const SizedBox(height: 32),
           ElevatedButton.icon(
-            onPressed: () => context.push('/add-transaction'),
+            onPressed: () => context.go('/add-transaction'),
             icon: const Icon(Icons.add, color: Colors.white),
             label: const Text(
               'Tambah Transaksi',
@@ -1051,7 +1051,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
   }
 
   void _showTransactionDetails(db.Transaction transaction) {
-    context.push('/add-transaction', extra: transaction);
+    context.go('/add-transaction', extra: transaction);
   }
 
   void _applyFilters() {

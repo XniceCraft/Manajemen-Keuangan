@@ -60,7 +60,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
             children: [_buildCategoriesList(true), _buildCategoriesList(false)],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => context.push('/add-category'),
+            onPressed: () => context.go('/add-category'),
             backgroundColor: AppTheme.primaryColor,
             child: const Icon(Icons.add, color: Colors.white),
           ),
@@ -287,8 +287,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen>
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            Navigator.pop(context);
-                            context.push('/add-category', extra: category);
+                            context.go('/add-category', extra: category);
                           },
                           icon: const Icon(Icons.edit, color: Colors.white),
                           label: const Text(
